@@ -3,7 +3,7 @@
 
 1. **Clone The Repositories:**
 ```bash
-git clone https://github.com/VinzSenzoo/BitquantAutoBot && cd BitquantAutoBot
+git clone https://github.com/airdropbomb/BitquantAutoBot && cd BitquantAutoBot
 ```
 
 2. **Install Dependencies**
