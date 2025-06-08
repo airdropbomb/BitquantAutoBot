@@ -82,7 +82,7 @@ async function clearConsoleLine() {
 
 let isSpinnerActive = false;
 
-async function withRetry(fn, maxRetries = 5, actionText = 'Operasi') {
+async function withRetry(fn, maxRetries = 5, actionText = 'Operation') {
   const spinner = ora({ text: chalk.cyan(` ┊ → ${actionText}...`), prefixText: '', spinner: 'bouncingBar', interval: 120 }).start();
   isSpinnerActive = true;
   let lastError = null;
@@ -97,7 +97,7 @@ async function withRetry(fn, maxRetries = 5, actionText = 'Operasi') {
       lastError = err;
       if (i < maxRetries - 1) {
         const errorMessage = err.response?.status === 403 ? 'Error 403 Forbidden' : err.message;
-        spinner.text = chalk.cyan(` ┊ → ${actionText} [Retry ke-${i + 1}/${maxRetries} | ${errorMessage}]...`);
+        spinner.text = chalk.cyan(` ┊ → ${actionText} [Retry ${i + 1}/${maxRetries} | ${errorMessage}]...`);
         await sleep(5000);
         continue;
       }
@@ -169,7 +169,7 @@ async function getIdToken(token, proxy, baseHeaders) {
         'Content-Type': 'application/json',
         'x-client-data': 'CJz7ygE=',
         'x-client-version': 'Opera/JsCore/11.6.0/FirebaseCore-web',
-        'x-firebase-gmpid': '1:976084784386:web:bb57c2b7c2642ce85b1e1b',
+        'x-firebase-gmp3186:web:bb57c2b7c2642ce85b1e1b',
       },
     };
     if (proxy) {
@@ -266,18 +266,18 @@ async function processAccounts(privateKeys, messages, accountProxies, chatCount,
     const proxy = accountProxies[i];
     let keypair;
 
-    console.log(chalk.blue(`═════[ Akun ${i + 1}/${privateKeys.length} | @ ${getTimestamp()} ]═════`));
-    console.log(chalk.cyan(` ┊ ${proxy ? `Menggunakan proxy: ${proxy}` : 'Tidak menggunakan proxy'}`));
+    console.log(chalk.blue(`═════[ Account ${i + 1}/${privateKeys.length} | @ ${getTimestamp()} ]═════`));
+    console.log(chalk.cyan(` ┊ ${proxy ? `Using proxy: ${proxy}` : 'Not using proxy'}`));
     try {
       const decodedKey = bs58.decode(privateKey);
       console.log(chalk.cyan(` ┊ │ Decoded private key length: ${decodedKey.length} bytes`));
       if (decodedKey.length !== 64) {
-        throw new Error(`Panjang private key tidak valid: ${decodedKey.length} bytes, harus 64 bytes`);
+        throw new Error(`Invalid private key length: ${decodedKey.length} bytes, must be 64 bytes`);
       }
       keypair = Keypair.fromSecretKey(decodedKey);
-      console.log(chalk.green(` ┊ │ Private key valid untuk akun ${i + 1}`));
+      console.log(chalk.green(` ┊ │ Private key valid for account ${i + 1}`));
     } catch (err) {
-      console.log(chalk.red(` ┊ ✗ Private key tidak valid untuk akun ${i + 1}: ${err.message}`));
+      console.log(chalk.red(` ┊ ✗ Invalid private key for account ${i + 1}: ${err.message}`));
       failCount++;
       continue;
     }
@@ -309,7 +309,7 @@ async function processAccounts(privateKeys, messages, accountProxies, chatCount,
 
     try {
       await resetSession();
-      console.log(chalk.magentaBright(' ┊ ┌── Proses Chat ──'));
+      console.log(chalk.magentaBright(' ┊ ┌── Chat Process ──'));
       let consecutive403Failures = 0;
       const maxConsecutive403Failures = 3;
 
@@ -329,8 +329,8 @@ async function processAccounts(privateKeys, messages, accountProxies, chatCount,
           sessionState.refreshToken = refreshResult.refreshToken;
           sessionState.retry403Count = 0;
         } catch (err) {
-          console.log(chalk.red(` ┊ │ Gagal refresh token untuk chat ${j + 1}: ${err.message}`));
-          console.log(chalk.cyan(` ┊ │ Mencoba inisialisasi ulang sesi...`));
+          console.log(chalk.red(` ┊ │ Failed to refresh token for chat ${j + 1}: ${err.message}`));
+          console.log(chalk.cyan(` ┊ │ Attempting to reinitialize session...`));
           await resetSession();
           accessToken = sessionState.idToken;
           continue;
@@ -342,7 +342,7 @@ async function processAccounts(privateKeys, messages, accountProxies, chatCount,
           'Getting Chat Statistic'
         );
         if (stats.daily_message_count >= stats.daily_message_limit) {
-          console.log(chalk.red(` ┊ │ Batas chat harian tercapai: ${stats.daily_message_count}/${stats.daily_message_limit}`));
+          console.log(chalk.red(` ┊ │ Daily chat limit reached: ${stats.daily_message_count}/${stats.daily_message_limit}`));
           break;
         }
 
@@ -378,24 +378,24 @@ async function processAccounts(privateKeys, messages, accountProxies, chatCount,
           } catch (err) {
             if (err.response && err.response.status === 403 && sessionState.retry403Count < max403Retries) {
               sessionState.retry403Count++;
-              console.log(chalk.cyan(` ┊ │ Mencoba inisialisasi ulang sesi karena error 403 (percobaan ${sessionState.retry403Count}/${max403Retries})...`));
+              console.log(chalk.cyan(` ┊ │ Attempting to reinitialize session due to 403 error (attempt ${sessionState.retry403Count}/${max403Retries})...`));
               await sleep(15000);
               await resetSession();
               accessToken = sessionState.idToken;
               consecutive403Failures++;
               if (consecutive403Failures >= maxConsecutive403Failures) {
-                console.log(chalk.red(` ┊ │ Terlalu banyak kegagalan 403 berturut-turut. Menghentikan proses untuk akun ini.`));
-                throw new Error('Terlalu banyak kegagalan 403 berturut-turut');
+                console.log(chalk.red(` ┊ │ Too many consecutive 403 failures. Stopping process for this account.`));
+                throw new Error('Too many consecutive 403 failures');
               }
             } else {
-              console.log(chalk.red(` ┊ │ Gagal chat ${j + 1}: ${err.message}`));
+              console.log(chalk.red(` ┊ │ Failed chat ${j + 1}: ${err.message}`));
               throw err;
             }
           }
         }
 
         if (!chatSuccess && sessionState.retry403Count >= max403Retries) {
-          console.log(chalk.red(` ┊ │ Batas maksimum percobaan login ulang tercapai untuk chat ${j + 1}`));
+          console.log(chalk.red(` ┊ │ Maximum retry limit for session reinitialization reached for chat ${j + 1}`));
           break;
         }
 
@@ -404,7 +404,7 @@ async function processAccounts(privateKeys, messages, accountProxies, chatCount,
       }
       console.log(chalk.yellow(' ┊ └──'));
 
-      console.log(chalk.magentaBright(' ┊ ┌── Statistik Akun ──'));
+      console.log(chalk.magentaBright(' ┊ ┌── Account Statistics ──'));
       try {
         const { accessToken } = await withRetry(
           () => refreshAccessToken(sessionState.refreshToken, proxy, sessionState.baseHeaders),
@@ -433,7 +433,7 @@ async function processAccounts(privateKeys, messages, accountProxies, chatCount,
     console.log(chalk.gray(' ┊ ══════════════════════════════════════'));
   }
 
-  console.log(chalk.blue(`═════[ Selesai @ ${getTimestamp()} ]═════`));
+  console.log(chalk.blue(`═════[ Completed @ ${getTimestamp()} ]═════`));
   console.log(chalk.gray(` ┊ ✅ ${successCount} Account Success, ❌ ${failCount} Account Failed`));
   return { successCount, failCount };
 }
@@ -495,22 +495,22 @@ async function main() {
     return;
   }
   if (privateKeys.length === 0) {
-    console.log(chalk.red('✗ No Valid Private Key on pk.txt!'));
+    console.log(chalk.red('✗ No Valid Private Key in pk.txt!'));
     rl.close();
     return;
   }
 
   let messages;
   try {
-    const data = await fs.readFile('pesan.txt', 'utf8');
+    const data = await fs.readFile('message.txt', 'utf8');
     messages = data.split('\n').filter(line => line.trim() !== '').map(line => line.replace(/\r/g, ''));
   } catch (err) {
-    console.log(chalk.red('✗ File pesan.txt tidak ditemukan atau kosong!'));
+    console.log(chalk.red('✗ File message.txt not found or empty!'));
     rl.close();
     return;
   }
   if (messages.length === 0) {
-    console.log(chalk.red('✗ File pesan.txt kosong!'));
+    console.log(chalk.red('✗ File message.txt is empty!'));
     rl.close();
     return;
   }
@@ -521,13 +521,13 @@ async function main() {
     chatCount = parseInt(input, 10);
     if (!isNaN(chatCount) && chatCount > 0) {
       if (chatCount > DAILY_CHAT_LIMIT) {
-        console.log(chalk.red(`✗ Chat count tidak boleh melebihi batas harian (${DAILY_CHAT_LIMIT})!`));
+        console.log(chalk.red(`✗ Chat count cannot exceed daily limit (${DAILY_CHAT_LIMIT})!`));
         chatCount = DAILY_CHAT_LIMIT;
-        console.log(chalk.cyan(` ┊ Mengatur chat count ke ${chatCount}`));
+        console.log(chalk.cyan(` ┊ Setting chat count to ${chatCount}`));
       }
       break;
     }
-    console.log(chalk.red('✗ Masukkan angka yang valid!'));
+    console.log(chalk.red('✗ Enter a valid number!'));
   }
 
   let useProxy;
@@ -537,7 +537,7 @@ async function main() {
       useProxy = input.toLowerCase() === 'y';
       break;
     }
-    console.log(chalk.red('✗ Masukkan "y" atau "n"!'));
+    console.log(chalk.red('✗ Enter "y" or "n"!'));
   }
 
   let proxies = [];
@@ -546,16 +546,16 @@ async function main() {
       const data = await fs.readFile('proxy.txt', 'utf8');
       proxies = data.split('\n').filter(line => line.trim() !== '');
       if (proxies.length === 0) {
-        console.log(chalk.yellow('✗ File proxy.txt kosong. Lanjut tanpa proxy.'));
+        console.log(chalk.yellow('✗ File proxy.txt is empty. Continuing without proxy.'));
       }
     } catch (err) {
-      console.log(chalk.yellow('✗ File proxy.txt tidak ditemukan. Lanjut tanpa proxy.'));
+      console.log(chalk.yellow('✗ File proxy.txt not found. Continuing without proxy.'));
     }
   }
 
   const accountProxies = privateKeys.map((_, index) => proxies.length > 0 ? proxies[index % proxies.length] : null);
 
-  console.log(chalk.cyan(` ┊ ⏰ Memulai proses untuk ${privateKeys.length} akun...`));
+  console.log(chalk.cyan(` ┊ ⏰ Starting process for ${privateKeys.length} accounts...`));
   await processAccounts(privateKeys, messages, accountProxies, chatCount, noType);
   scheduleNextRun(privateKeys, messages, accountProxies, chatCount, noType);
   rl.close();
