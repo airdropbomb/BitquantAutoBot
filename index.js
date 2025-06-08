@@ -32,11 +32,11 @@ function getTimestamp() {
 
 function displayBanner() {
   const width = process.stdout.columns || 80;
-  const banner = figlet.textSync('NT EXHAUST', { font: 'ANSI Shadow' });
+  const banner = figlet.textSync('ADB NODE', { font: 'ANSI Shadow' });
   banner.split('\n').forEach(line => {
     console.log(chalk.cyanBright(line.padStart(line.length + Math.floor((width - line.length) / 2))));
   });
-  console.log(chalk.cyanBright(' '.repeat((width - 50) / 2) + '=== Telegram Channel 🚀 : NT Exhaust ( @NTExhaust ) ==='));
+  console.log(chalk.cyanBright(' '.repeat((width - 50) / 2) + '=== Telegram Channel 🚀 : ADB NODE ( @airdropbombnode ) ==='));
   console.log(chalk.magentaBright(' '.repeat((width - 30) / 2) + '✪  BITQUANT AUTO BOT  ✪\n'));
 }
 
